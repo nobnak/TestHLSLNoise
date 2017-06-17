@@ -2,6 +2,7 @@
 	Properties {
         _Phase ("Phase", Float) = 0
         _Scale ("Scale", Float) = 10
+        _Speed ("Speed", Float) = 1
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -18,6 +19,7 @@
 
             float _Phase;
             float _Scale;
+            float _Speed;
 
 			struct appdata {
 				float4 vertex : POSITION;
@@ -38,15 +40,17 @@
 			
 			fixed4 frag (v2f i) : SV_Target {
                 float v;
+                float2 offset = float2(_Phase, _Speed * _Time.y);
+                float2 uv = _Scale * float2(i.uv + offset);
 
                 #if defined(CELLULAR)
-                v = 0.5 * (cellular(_Scale * i.uv + _Phase) + 1.0);
+                v = 0.5 * (cellular(uv) + 1.0);
                 #elif defined(CLASSIC)
-                v = 0.5 * (cnoise(_Scale * i.uv + _Phase) + 1.0);
+                v = 0.5 * (cnoise(uv) + 1.0);
                 #elif defined(PSRD)
-                v = 0.5 * (srnoise(_Scale * i.uv, _Phase) + 1.0);
+                v = 0.5 * (srnoise(uv, 0.0) + 1.0);
                 #else
-                v = 0.5 * (snoise(_Scale * i.uv + _Phase) + 1.0);
+                v = 0.5 * (snoise(uv) + 1.0);
                 #endif
 
                 return v;
